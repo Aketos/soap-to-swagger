@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WSDL to Swagger Converter</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-content {
+            text-align: left;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 70vh;
+        }
+
+        .input-section {
+            padding: 30px;
+            border-right: 1px solid #e0e0e0;
+            background: #fafafa;
+        }
+
+        .output-section {
+            padding: 30px;
+            background: white;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 15px;
+            background: #e0e0e0;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .tab-button.active {
+            background: #4facfe;
+            color: white;
+        }
+
+        .tab-button:hover {
+            background: #3498db;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-upload input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-upload-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 30px;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            color: #666;
+        }
+
+        .file-upload-label:hover {
+            border-color: #4facfe;
+            background: #f8f9ff;
+            color: #4facfe;
+        }
+
+        .file-upload.has-file .file-upload-label {
+            border-color: #4facfe;
+            background: #f8f9ff;
+            color: #4facfe;
+        }
+
+        textarea, input[type="url"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus, input[type="url"]:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+
+        textarea {
+            min-height: 200px;
+        }
+
+        .convert-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .convert-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+        }
+
+        .convert-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            display: none;
+        }
+
+        .convert-button.loading .loading {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+
+        .convert-button.loading .button-text {
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .output-container {
+            position: relative;
+            height: 500px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .output-tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .output-tab {
+            padding: 10px 20px;
+            background: #f5f5f5;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .output-tab.active {
+            background: white;
+            border-bottom: 2px solid #4facfe;
+        }
+
+        .output-content {
+            height: calc(100% - 50px);
+            overflow: auto;
+            padding: 20px;
+            background: white;
+        }
+
+        .output-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-button {
+            padding: 8px 12px;
+            background: #4facfe;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .action-button:hover {
+            background: #3498db;
+        }
+
+        pre {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .error {
+            color: #e74c3c;
+            background: #fdf2f2;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .success {
+            color: #27ae60;
+            background: #f2fdf2;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #27ae60;
+        }
+
+        .placeholder {
+            text-align: center;
+            color: #999;
+            padding: 50px 20px;
+            font-size: 1.1rem;
+        }
+
+        .placeholder i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .success-banner {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 15px;
+            animation: slideDown 0.3s ease;
+        }
+
+        .success-banner.show {
+            display: flex;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .success-banner .success-content {
+            flex: 1;
+        }
+
+        .success-banner .success-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .success-banner .success-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .success-banner .success-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .success-banner .success-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .close-success {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            opacity: 0.8;
+            padding: 5px;
+        }
+
+        .close-success:hover {
+            opacity: 1;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .input-section {
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .input-tabs {
+                flex-direction: column;
+            }
+            
+            .tab-button {
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-exchange-alt"></i> WSDL to Swagger Converter</h1>
+                <p>Convert your SOAP WSDL files to modern OpenAPI/Swagger documentation</p>
+            </div>
+            <div class="header-nav">
+                <a href="/" class="nav-link active">
+                    <i class="fas fa-exchange-alt"></i>
+                    Converter
+                </a>
+                <a href="/manage" class="nav-link">
+                    <i class="fas fa-folder-open"></i>
+                    Manage Files
+                </a>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <h2 class="section-title">
+                    <i class="fas fa-upload"></i>
+                    Input WSDL
+                </h2>
+
+                <div class="input-tabs">
+                    <button class="tab-button active" data-tab="file">
+                        <i class="fas fa-file-upload"></i>
+                        File Upload
+                    </button>
+                    <button class="tab-button" data-tab="text">
+                        <i class="fas fa-edit"></i>
+                        Paste Text
+                    </button>
+                    <button class="tab-button" data-tab="url">
+                        <i class="fas fa-link"></i>
+                        From URL
+                    </button>
+                </div>
+
+                <form id="convertForm">
+                    <div id="file-tab" class="tab-content active">
+                        <div class="form-group">
+                            <label for="wsdl_file">Select WSDL File:</label>
+                            <div class="file-upload">
+                                <input type="file" id="wsdl_file" name="wsdl_file" accept=".wsdl,.xml">
+                                <label for="wsdl_file" class="file-upload-label">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <span class="upload-text">Choose WSDL file or drag & drop here</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="text-tab" class="tab-content">
+                        <div class="form-group">
+                            <label for="wsdl_text">Paste WSDL Content:</label>
+                            <textarea id="wsdl_text" name="wsdl_text" placeholder="Paste your WSDL content here..."></textarea>
+                        </div>
+                    </div>
+
+                    <div id="url-tab" class="tab-content">
+                        <div class="form-group">
+                            <label for="wsdl_url">WSDL URL:</label>
+                            <input type="url" id="wsdl_url" name="wsdl_url" placeholder="https://example.com/service?wsdl">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="convert-button">
+                        <i class="fas fa-sync-alt loading"></i>
+                        <span class="button-text">
+                            <i class="fas fa-magic"></i>
+                            Convert to Swagger
+                        </span>
+                    </button>
+                </form>
+            </div>
+
+            <div class="output-section">
+                <div id="success-banner" class="success-banner">
+                    <i class="fas fa-check-circle" style="font-size: 1.5rem;"></i>
+                    <div class="success-content">
+                        <div class="success-title">Conversion Successful!</div>
+                        <div>Your WSDL has been converted and saved.</div>
+                        <div class="success-links">
+                            <a href="#" id="view-swagger-ui" class="success-link" target="_blank">
+                                <i class="fas fa-external-link-alt"></i>
+                                View Swagger UI
+                            </a>
+                            <a href="/manage" class="success-link">
+                                <i class="fas fa-folder-open"></i>
+                                Manage Files
+                            </a>
+                        </div>
+                    </div>
+                    <button class="close-success" onclick="hideSuccessMessage()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <h2 class="section-title">
+                    <i class="fas fa-code"></i>
+                    Swagger Output
+                </h2>
+
+                <div class="output-container">
+                    <div class="output-tabs">
+                        <button class="output-tab active" data-format="json">JSON</button>
+                        <button class="output-tab" data-format="yaml">YAML</button>
+                    </div>
+                    
+                    <div class="output-actions">
+                        <button class="action-button" id="copyButton" title="Copy to clipboard">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button class="action-button" id="downloadButton" title="Download file">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+
+                    <div class="output-content">
+                        <div class="placeholder">
+                            <i class="fas fa-file-code"></i>
+                            <p>Your converted Swagger documentation will appear here</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const tabName = button.dataset.tab;
+                
+                // Update active tab button
+                document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+                button.classList.add('active');
+                
+                // Update active tab content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(`${tabName}-tab`).classList.add('active');
+            });
+        });
+
+        // Output format switching
+        document.querySelectorAll('.output-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.output-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                if (window.currentSwaggerData) {
+                    displayOutput(window.currentSwaggerData, tab.dataset.format);
+                }
+            });
+        });
+
+        // File upload handling
+        const fileInput = document.getElementById('wsdl_file');
+        const fileUpload = document.querySelector('.file-upload');
+        const uploadText = document.querySelector('.upload-text');
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                fileUpload.classList.add('has-file');
+                uploadText.textContent = `Selected: ${e.target.files[0].name}`;
+            } else {
+                fileUpload.classList.remove('has-file');
+                uploadText.textContent = 'Choose WSDL file or drag & drop here';
+            }
+        });
+
+        // Drag and drop functionality
+        fileUpload.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUpload.style.borderColor = '#4facfe';
+            fileUpload.style.background = '#f8f9ff';
+        });
+
+        fileUpload.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            if (!fileUpload.classList.contains('has-file')) {
+                fileUpload.style.borderColor = '#ddd';
+                fileUpload.style.background = 'white';
+            }
+        });
+
+        fileUpload.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                fileUpload.classList.add('has-file');
+                uploadText.textContent = `Selected: ${files[0].name}`;
+            }
+        });
+
+        // Form submission
+        document.getElementById('convertForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const convertButton = document.querySelector('.convert-button');
+            const outputContent = document.querySelector('.output-content');
+            
+            // Show loading state
+            convertButton.classList.add('loading');
+            convertButton.disabled = true;
+            
+            try {
+                const formData = new FormData(e.target);
+                
+                const response = await fetch('/convert', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    window.currentSwaggerData = result.swagger;
+                    window.currentFileId = result.file_id;
+                    const activeFormat = document.querySelector('.output-tab.active').dataset.format;
+                    displayOutput(result.swagger, activeFormat);
+                    
+                    // Show success message with management link
+                    showSuccessMessage(result.file_id);
+                } else {
+                    outputContent.innerHTML = `<div class="error"><i class="fas fa-exclamation-triangle"></i> ${result.error}</div>`;
+                }
+                
+            } catch (error) {
+                outputContent.innerHTML = `<div class="error"><i class="fas fa-exclamation-triangle"></i> Network error: ${error.message}</div>`;
+            } finally {
+                convertButton.classList.remove('loading');
+                convertButton.disabled = false;
+            }
+        });
+
+        // Display output function
+        function displayOutput(swaggerData, format) {
+            const outputContent = document.querySelector('.output-content');
+            
+            let content;
+            if (format === 'yaml') {
+                content = convertToYAML(swaggerData);
+            } else {
+                content = JSON.stringify(swaggerData, null, 2);
+            }
+            
+            outputContent.innerHTML = `<pre><code>${escapeHtml(content)}</code></pre>`;
+        }
+
+        // Convert JSON to YAML (simple implementation)
+        function convertToYAML(obj, indent = 0) {
+            const spaces = '  '.repeat(indent);
+            let yaml = '';
+            
+            for (const [key, value] of Object.entries(obj)) {
+                if (value === null || value === undefined) {
+                    yaml += `${spaces}${key}: null\n`;
+                } else if (typeof value === 'object' && !Array.isArray(value)) {
+                    yaml += `${spaces}${key}:\n`;
+                    yaml += convertToYAML(value, indent + 1);
+                } else if (Array.isArray(value)) {
+                    yaml += `${spaces}${key}:\n`;
+                    value.forEach(item => {
+                        if (typeof item === 'object') {
+                            yaml += `${spaces}  -\n`;
+                            yaml += convertToYAML(item, indent + 2);
+                        } else {
+                            yaml += `${spaces}  - ${item}\n`;
+                        }
+                    });
+                } else if (typeof value === 'string') {
+                    yaml += `${spaces}${key}: "${value}"\n`;
+                } else {
+                    yaml += `${spaces}${key}: ${value}\n`;
+                }
+            }
+            
+            return yaml;
+        }
+
+        // Utility function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Copy to clipboard functionality
+        document.getElementById('copyButton').addEventListener('click', async () => {
+            const outputContent = document.querySelector('.output-content pre');
+            if (outputContent) {
+                try {
+                    await navigator.clipboard.writeText(outputContent.textContent);
+                    
+                    // Visual feedback
+                    const button = document.getElementById('copyButton');
+                    const originalHTML = button.innerHTML;
+                    button.innerHTML = '<i class="fas fa-check"></i>';
+                    setTimeout(() => {
+                        button.innerHTML = originalHTML;
+                    }, 2000);
+                } catch (err) {
+                    console.error('Failed to copy: ', err);
+                }
+            }
+        });
+
+        // Download functionality
+        document.getElementById('downloadButton').addEventListener('click', () => {
+            const outputContent = document.querySelector('.output-content pre');
+            const activeFormat = document.querySelector('.output-tab.active').dataset.format;
+            
+            if (outputContent && window.currentSwaggerData) {
+                const content = outputContent.textContent;
+                const filename = `swagger.${activeFormat}`;
+                const mimeType = activeFormat === 'yaml' ? 'text/yaml' : 'application/json';
+                
+                const blob = new Blob([content], { type: mimeType });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        });
+
+        // Success message functions
+        function showSuccessMessage(fileId) {
+            const banner = document.getElementById('success-banner');
+            const swaggerLink = document.getElementById('view-swagger-ui');
+            
+            swaggerLink.href = `/swagger-ui/${fileId}`;
+            banner.classList.add('show');
+            
+            // Auto-hide after 10 seconds
+            setTimeout(() => {
+                hideSuccessMessage();
+            }, 10000);
+        }
+
+        function hideSuccessMessage() {
+            const banner = document.getElementById('success-banner');
+            banner.classList.remove('show');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+Flask==3.0.0
+lxml==4.9.3
+requests==2.31.0
+pyyaml==6.0.1
+xmltodict==0.13.0
+Werkzeug==3.0.1

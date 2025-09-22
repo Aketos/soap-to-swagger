@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:tns="http://example.com/calculator"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             targetNamespace="http://example.com/calculator"
+             elementFormDefault="qualified">
+
+    <documentation>Simple Calculator Web Service</documentation>
+
+    <types>
+        <xsd:schema targetNamespace="http://example.com/calculator">
+            <xsd:element name="AddRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="a" type="xsd:double"/>
+                        <xsd:element name="b" type="xsd:double"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            
+            <xsd:element name="AddResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="result" type="xsd:double"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            
+            <xsd:element name="SubtractRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="a" type="xsd:double"/>
+                        <xsd:element name="b" type="xsd:double"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            
+            <xsd:element name="SubtractResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="result" type="xsd:double"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:schema>
+    </types>
+
+    <message name="AddRequestMessage">
+        <part name="parameters" element="tns:AddRequest"/>
+    </message>
+    
+    <message name="AddResponseMessage">
+        <part name="parameters" element="tns:AddResponse"/>
+    </message>
+    
+    <message name="SubtractRequestMessage">
+        <part name="parameters" element="tns:SubtractRequest"/>
+    </message>
+    
+    <message name="SubtractResponseMessage">
+        <part name="parameters" element="tns:SubtractResponse"/>
+    </message>
+
+    <portType name="CalculatorPortType">
+        <documentation>Calculator operations</documentation>
+        
+        <operation name="Add">
+            <documentation>Add two numbers</documentation>
+            <input message="tns:AddRequestMessage"/>
+            <output message="tns:AddResponseMessage"/>
+        </operation>
+        
+        <operation name="Subtract">
+            <documentation>Subtract two numbers</documentation>
+            <input message="tns:SubtractRequestMessage"/>
+            <output message="tns:SubtractResponseMessage"/>
+        </operation>
+    </portType>
+
+    <binding name="CalculatorBinding" type="tns:CalculatorPortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        
+        <operation name="Add">
+            <soap:operation soapAction="http://example.com/calculator/Add"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+        
+        <operation name="Subtract">
+            <soap:operation soapAction="http://example.com/calculator/Subtract"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+    </binding>
+
+    <service name="CalculatorService">
+        <documentation>Calculator Web Service</documentation>
+        <port name="CalculatorPort" binding="tns:CalculatorBinding">
+            <soap:address location="http://example.com/calculator"/>
+        </port>
+    </service>
+
+</definitions>

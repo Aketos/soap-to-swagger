@@ -1,0 +1,32 @@
+[
+  {
+    "id": "b7aee391",
+    "name": "CalculatorService",
+    "title": "CalculatorService",
+    "description": "Simple Calculator Web Service",
+    "version": "1.0.0",
+    "created_at": "2025-09-22T10:42:56.019658",
+    "operations_count": 2,
+    "schemas_count": 7
+  },
+  {
+    "id": "79d2415e",
+    "name": "NavoriService",
+    "title": "NavoriService",
+    "description": "SOAP Web Service converted from WSDL",
+    "version": "1.0.0",
+    "created_at": "2025-09-22T10:46:32.771149",
+    "operations_count": 277,
+    "schemas_count": 0
+  },
+  {
+    "id": "8c22b341",
+    "name": "NavoriService",
+    "title": "NavoriService",
+    "description": "SOAP Web Service converted from WSDL",
+    "version": "1.0.0",
+    "created_at": "2025-09-22T10:46:52.051574",
+    "operations_count": 277,
+    "schemas_count": 0
+  }
+]
