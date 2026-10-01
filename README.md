@@ -26,9 +26,6 @@ A comprehensive web application that converts WSDL (Web Services Description Lan
 
 ### Quick Start
 ```bash
-# Clone or download the project
-cd soap-swagger
-
 # Run the startup script (recommended)
 ./start.sh
 ```
